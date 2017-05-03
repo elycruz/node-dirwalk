@@ -1,0 +1,23 @@
+{
+  "name": "node-directory-iterator",
+  "version": "1.0.0",
+  "description": "Directory Iterator implementation for node.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elycruz/node-directory-iterator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elycruz/node-directory-iterator/issues"
+  },
+  "homepage": "https://github.com/elycruz/node-directory-iterator#readme",
+  "dependencies": {
+    "fjl": "^0.9.6"
+  }
+}
