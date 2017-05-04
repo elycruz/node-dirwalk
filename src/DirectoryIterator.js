@@ -25,6 +25,13 @@ const fs = require('fs'),
         resolve(result);
     },
 
+    createFileObject = (fileName, filePath, stat) => {
+        return {
+            fileName,
+            filePath
+        }
+    },
+
     processForkOnStat = curry4(((filePath, fileName, zero, stat) => stat.isDirectory() ?
         processDirectory(filePath, zero, fileName) :
         processFile(filePath, zero, fileName))),
@@ -69,11 +76,9 @@ log(dirToJson(Object, () => {}, path.join(__dirname, '../node_modules')));
 
 class SjlFileInfo {
 
-    constructor (stat) {
+    constructor (fileName, filePath, stat) {
 
-        let _fileName,
-            _filePath,
-            _files,
+        let _files,
             _lastChangedStatus,
             _lastModified,
             _createdDate,
@@ -81,84 +86,47 @@ class SjlFileInfo {
 
         Object.defineProperties(this, {
             fileName: {
-                get: function () {
-                    return _fileName;
-                },
-                set: function (value) {
-                    _fileName = value;
-                },
+                value: fileName,
                 enumerable: true
             },
             filePath: {
-                get: function () {
-                    return _filePath;
-                },
-                set: function (value) {
-                    _filePath = value;
-                },
+                value: filePath,
                 enumerable: true
             },
             basename: {
-                get: function () {
-                    return _basename;
-                },
-                set: function (value) {
-                    _basename = value;
-                },
+                value: path.basename(fileName),
                 enumerable: true
             },
             extension: {
-                get: function () {
-                    return _extension;
-                },
-                set: function (value) {
-                    _extension = value;
-                },
+                value: path.extname(fileName),
                 enumerable: true
             },
             lastModified: {
-                get: function () {
-                    return _lastModified;
-                },
-                set: function (value) {
-                    _lastModified = value;
-                },
+                value: stat.mtime,
                 enumerable: true
             },
             createdDate: {
-                get: function () {
-                    return _createdDate;
-                },
-                set: function (value) {
-                    _createdDate = value;
-                },
+                value: stat.birthtime,
                 enumerable: true
             },
             lastChangedStatus: {
-                get: function () {
-                    return _lastChangedStatus;
-                },
-                set: function (value) {
-                    _lastChangedStatus = value;
-                },
+                value: stat.ctime,
                 enumerable: true
             },
             lastAccessed: {
-                get: function () {
-                    return _lastAccessed;
-                },
-                set: function (value) {
-                    _lastAccessed = value;
-                },
+                value: stat.atime,
+                enumerable: true
+            },
+            isDirectory: {
+                value: stat.isDirectory.bind(stat),
+                enumerable: true
+            },
+            isFile: {
+                value: stat.isFile.bind(stat),
                 enumerable: true
             },
             files: {
-                get: function () {
-                    return _files;
-                },
-                set: function (value) {
-                    _files = value;
-                },
+                value: [],
                 enumerable: true
             },
         });
