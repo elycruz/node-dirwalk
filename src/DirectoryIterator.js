@@ -33,35 +33,39 @@ const fs = require('fs'),
     },
 
     processForkOnStat = curry4(((filePath, fileName, zero, stat) => stat.isDirectory() ?
-        processDirectory(filePath, zero, fileName) :
-        processFile(filePath, zero, fileName))),
+        processDirectory(filePath, zero, stat, fileName) :
+        processFile(filePath, zero, stat, fileName))),
 
-    processDirectory = curry3((dirPath, zero, dirName) => new Promise ((resolve, reject) => readDirectory(dirPath)
+    processDirectory = curry4((dirPath, zero, stat, dirName) => new Promise ((resolve, reject) => readDirectory(dirPath)
         .then(processFiles(dirPath, zero))
-        .then(resolve)
-        .catch(reject))),
+        .then(resolve, reject))),
 
-    processFile = curry3((filePath, zero, fileName) => new Promise ((resolve, reject) => readStat(filePath)
-        .then(stat => {
-            const fileObj = {};
-            if (stat.isDirectory()) {
-                fileObj.files = [];
-                Object.assign(fileObj, stat);
-                processDirectory(filePath, fileObj)
-            }
-        })
-        .then(resolve)
-        .catch(reject))),
-
-    processFiles = curry3((dir, zero, files) => new Promise ((resolve, reject) => {
-        Promise.all(
-            files.map(fileName => processFile(path.join(dir, fileName), zero, fileName))
-        )
-            .then(resolve)
-            .catch(reject);
+    processFile = curry4((filePath, zero, stat, fileName) => new Promise ((resolve, reject) => {
+        const fileObj = {
+            fileName,
+            filePath
+        };
+        // log(fileName);
+        if (stat.isDirectory()) {
+            fileObj.files = [];
+            Object.assign(fileObj, stat);
+            return processDirectory(filePath, fileObj, stat, fileName).then(resolve, reject);
+        }
+        resolve(fileObj);
     })),
 
-    dirToJsonFromDir = (TypeRep, filterFn, dir) => readDirectory(dir).then(processFiles(dir, {})).then(log),
+    processFiles = curry3((dir, zero, files) => new Promise ((resolve, reject) => {
+        return Promise.all(
+            files.map(fileName => {
+                const filePath = path.join(dir, fileName);
+                return readStat(filePath)
+                    .then(processForkOnStat(filePath, fileName, zero));
+            })
+        )
+            .then(resolve, reject);
+    })),
+
+    dirToJsonFromDir = (TypeRep, filterFn, dir) => readDirectory(dir).then(processFiles(dir, {filePath: dir, fileName: path.basename(dir)})),
 
     dirToJsonFromFiles = (TypeRep, filterFn, files) => processFiles(Object, {}, files);
 
