@@ -6,14 +6,13 @@
 
 const fs = require('fs'),
     path = require('path'),
-    log = console.log.bind(console),
-    {pureCurry3: curry3,
+
+    {pureCurry5: curry5,
         pureCurry4: curry4} = require('fjl'),
+
     util = require('util'),
-
     inspect = util.inspect.bind(util),
-
-    // logInspection = incoming => log(inspect(incoming, 20)),
+    log = console.log.bind(console),
 
     peakOnce = incoming => {
         log('peakOnce: ', inspect(incoming, {depth: 100}));
@@ -35,30 +34,18 @@ const fs = require('fs'),
         resolve(result);
     },
 
-    fileObject = (TypeRep, fileName, filePath, stat) => {
-        return {
-            fileName,
-            filePath
-        };
-    },
+    fileObject = (TypeRep, fileName, filePath, stat) => new TypeRep(
+        fileName, filePath, stat),
 
-    dirFileObject = (TypeRep, fileName, filePath, stat) => {
-        return {
-            fileName,
-            filePath,
-            files: []
-        };
-    },
+    processForkOnStat = curry5(((filePath, fileName, zero, TypeRep, stat) => stat.isDirectory() ?
+        processDirectory(filePath, zero, TypeRep, stat, fileName) :
+        processFile(filePath, zero, TypeRep, stat, fileName))),
 
-    processForkOnStat = curry4(((filePath, fileName, zero, stat) => stat.isDirectory() ?
-        processDirectory(filePath, zero, stat, fileName) :
-        processFile(filePath, zero, stat, fileName))),
-
-    processDirectory = curry4((dirPath, zero, stat, dirName) => new Promise ((resolve, reject) => readDirectory(dirPath)
+    processDirectory = curry5((dirPath, zero, TypeRep, stat, dirName) => new Promise ((resolve, reject) => readDirectory(dirPath)
         .then(files => {
-            return processFiles(dirPath, zero, files)
+            return processFiles(dirPath, zero, TypeRep, files)
                 .then(processedFiles => {
-                    const fileObj = dirFileObject(dirName, dirPath, stat);
+                    const fileObj = fileObject(TypeRep, dirName, dirPath, stat);
                     fileObj.files = processedFiles;
                     return fileObj;
                 });
@@ -66,97 +53,87 @@ const fs = require('fs'),
         // .then(peakOnce)
         .then(resolve, reject))),
 
-    processFile = curry4((filePath, zero, stat, fileName) => new Promise ((resolve, reject) => {
+    processFile = curry5((filePath, zero, TypeRep, stat, fileName) => new Promise ((resolve, reject) => {
         if (stat.isDirectory()) {
-            const fileObj = dirFileObject(fileName, filePath, stat);
-            return processDirectory(filePath, fileObj, stat, fileName)
+            const fileObj = fileObject(TypeRep, fileName, filePath, stat);
+            return processDirectory(filePath, fileObj, TypeRep, stat, fileName)
                 .then(files => {
                     return fileObj.files = files;
                 })
                 .then(resolve, reject);
         }
-        resolve(fileObject(fileName, filePath, stat));
+        resolve(fileObject(TypeRep, fileName, filePath, stat));
     })),
 
-    processFiles = curry3((dir, zero, files) => new Promise ((resolve, reject) => {
+    processFiles = curry4((dir, zero, TypeRep, files) => new Promise ((resolve, reject) => {
         return Promise.all(
             files.map(fileName => {
                 const filePath = path.join(dir, fileName);
                 return readStat(filePath)
-                    .then(processForkOnStat(filePath, fileName, zero));
+                    .then(processForkOnStat(filePath, fileName, zero, TypeRep));
             })
         )
             .then(resolve, reject);
     })),
 
-    dirToJsonFromDir = (TypeRep, filterFn, dir) => readDirectory(dir).then(processFiles(dir, {filePath: dir, fileName: path.basename(dir)})),
+    dirToJson = (TypeRep, zero, dir) => {
+        zero = zero || {};
+        zero.filePath = dir;
+        zero.fileName = path.basename(dir);
+        return readDirectory(dir).then(processFiles(dir, zero, TypeRep));
+    };
 
-    dirToJsonFromFiles = (TypeRep, filterFn, files) => processFiles(Object, {}, files);
-
-function dirToJsonRecursive (TypeRep, filterFn, dirOrFilesArray) {
+function dirToJsonRecursive (TypeRep, zero, dir) {
     TypeRep = TypeRep || SjlFileInfo;
-    return (Array.isArray(dirOrFilesArray) ?
-        dirToJsonFromFiles(TypeRep, filterFn, dirOrFilesArray) :
-        dirToJsonFromDir(TypeRep, filterFn, dirOrFilesArray));
-        // .then(logInspection, logInspection)
+    return dirToJson(TypeRep, zero, dir);
+}
+
+function SjlFileInfo (fileName, filePath, stat) {
+    Object.defineProperties(this, {
+        fileName: {
+            value: fileName,
+            enumerable: true
+        },
+        filePath: {
+            value: filePath,
+            enumerable: true
+        },
+        basename: {
+            value: path.basename(fileName),
+            enumerable: true
+        },
+        extension: {
+            value: path.extname(fileName),
+            enumerable: true
+        },
+        lastModified: {
+            value: stat.mtime,
+            enumerable: true
+        },
+        createdDate: {
+            value: stat.birthtime,
+            enumerable: true
+        },
+        lastChangedStatus: {
+            value: stat.ctime,
+            enumerable: true
+        },
+        lastAccessed: {
+            value: stat.atime,
+            enumerable: true
+        },
+        stat: {
+            value: stat
+        }
+    });
+
+    // `files` property if is directory
+    // if (stat.isDirectory()) {
+    //     Object.defineProperty(this, 'files', {
+    //         value: [], enumerable: true
+    //     });
+    // }
 }
 
 // Inline test
-dirToJsonRecursive (Object, () => {}, path.join(__dirname, '../node_modules')).then(peakOnce);
-
-class SjlFileInfo {
-
-    constructor (fileName, filePath, stat) {
-        Object.defineProperties(this, {
-            fileName: {
-                value: fileName,
-                enumerable: true
-            },
-            filePath: {
-                value: filePath,
-                enumerable: true
-            },
-            basename: {
-                value: path.basename(fileName),
-                enumerable: true
-            },
-            extension: {
-                value: path.extname(fileName),
-                enumerable: true
-            },
-            lastModified: {
-                value: stat.mtime,
-                enumerable: true
-            },
-            createdDate: {
-                value: stat.birthtime,
-                enumerable: true
-            },
-            lastChangedStatus: {
-                value: stat.ctime,
-                enumerable: true
-            },
-            lastAccessed: {
-                value: stat.atime,
-                enumerable: true
-            },
-            stat: {
-                value: stat
-            }
-        });
-    }
-
-    //
-    // static FILE_TYPE_FILE () {
-    //     return 'file';
-    // }
-    //
-    // static FILE_TYPE_DIR () {
-    //     return 'dir';
-    // }
-    //
-    // static FILE_TYPE_LINK () {
-    //     return 'link';
-    // }
-
-}
+dirToJsonRecursive (SjlFileInfo, null, path.join(__dirname, '../node_modules')).then(peakOnce);
