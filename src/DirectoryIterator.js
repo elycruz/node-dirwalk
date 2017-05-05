@@ -9,6 +9,16 @@ const fs = require('fs'),
     log = console.log.bind(console),
     {pureCurry3: curry3,
         pureCurry4: curry4} = require('fjl'),
+    util = require('util'),
+
+    inspect = util.inspect.bind(util),
+
+    // logInspection = incoming => log(inspect(incoming, 20)),
+
+    peakOnce = incoming => {
+        log('peakOnce: ', inspect(incoming, {depth: 100}));
+        return incoming;
+    },
 
     readDirectory = dir => new Promise ((resolve, reject) => {
         fs.readdir(dir, fsReadCallbackFactory(resolve, reject));
@@ -25,11 +35,19 @@ const fs = require('fs'),
         resolve(result);
     },
 
-    createFileObject = (fileName, filePath, stat) => {
+    fileObject = (TypeRep, fileName, filePath, stat) => {
         return {
             fileName,
             filePath
-        }
+        };
+    },
+
+    dirFileObject = (TypeRep, fileName, filePath, stat) => {
+        return {
+            fileName,
+            filePath,
+            files: []
+        };
     },
 
     processForkOnStat = curry4(((filePath, fileName, zero, stat) => stat.isDirectory() ?
@@ -37,21 +55,27 @@ const fs = require('fs'),
         processFile(filePath, zero, stat, fileName))),
 
     processDirectory = curry4((dirPath, zero, stat, dirName) => new Promise ((resolve, reject) => readDirectory(dirPath)
-        .then(processFiles(dirPath, zero))
+        .then(files => {
+            return processFiles(dirPath, zero, files)
+                .then(processedFiles => {
+                    const fileObj = dirFileObject(dirName, dirPath, stat);
+                    fileObj.files = processedFiles;
+                    return fileObj;
+                });
+        })
+        // .then(peakOnce)
         .then(resolve, reject))),
 
     processFile = curry4((filePath, zero, stat, fileName) => new Promise ((resolve, reject) => {
-        const fileObj = {
-            fileName,
-            filePath
-        };
-        // log(fileName);
         if (stat.isDirectory()) {
-            fileObj.files = [];
-            Object.assign(fileObj, stat);
-            return processDirectory(filePath, fileObj, stat, fileName).then(resolve, reject);
+            const fileObj = dirFileObject(fileName, filePath, stat);
+            return processDirectory(filePath, fileObj, stat, fileName)
+                .then(files => {
+                    return fileObj.files = files;
+                })
+                .then(resolve, reject);
         }
-        resolve(fileObj);
+        resolve(fileObject(fileName, filePath, stat));
     })),
 
     processFiles = curry3((dir, zero, files) => new Promise ((resolve, reject) => {
@@ -69,25 +93,18 @@ const fs = require('fs'),
 
     dirToJsonFromFiles = (TypeRep, filterFn, files) => processFiles(Object, {}, files);
 
-function dirToJson (TypeRep, filterFn, dirOrFilesArray) {
+function dirToJsonRecursive (TypeRep, filterFn, dirOrFilesArray) {
     return (Array.isArray(dirOrFilesArray) ?
         dirToJsonFromFiles(TypeRep, filterFn, dirOrFilesArray) :
-        dirToJsonFromDir(TypeRep, filterFn, dirOrFilesArray))
-        .then(log, log)
+        dirToJsonFromDir(TypeRep, filterFn, dirOrFilesArray));
+        // .then(logInspection, logInspection)
 }
 
-log(dirToJson(Object, () => {}, path.join(__dirname, '../node_modules')));
+dirToJsonRecursive (Object, () => {}, path.join(__dirname, '../node_modules')).then(peakOnce);
 
 class SjlFileInfo {
 
     constructor (fileName, filePath, stat) {
-
-        let _files,
-            _lastChangedStatus,
-            _lastModified,
-            _createdDate,
-            _lastAccessed;
-
         Object.defineProperties(this, {
             fileName: {
                 value: fileName,
@@ -121,21 +138,22 @@ class SjlFileInfo {
                 value: stat.atime,
                 enumerable: true
             },
-            isDirectory: {
-                value: stat.isDirectory.bind(stat),
-                enumerable: true
-            },
-            isFile: {
-                value: stat.isFile.bind(stat),
-                enumerable: true
-            },
-            files: {
-                value: [],
-                enumerable: true
-            },
+            stat: {
+                value: stat
+            }
         });
-
     }
+    //
+    // static FILE_TYPE_FILE () {
+    //     return 'file';
+    // }
+    //
+    // static FILE_TYPE_DIR () {
+    //     return 'dir';
+    // }
+    //
+    // static FILE_TYPE_LINK () {
+    //     return 'link';
+    // }
 
 }
-
