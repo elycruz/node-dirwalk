@@ -94,12 +94,14 @@ const fs = require('fs'),
     dirToJsonFromFiles = (TypeRep, filterFn, files) => processFiles(Object, {}, files);
 
 function dirToJsonRecursive (TypeRep, filterFn, dirOrFilesArray) {
+    TypeRep = TypeRep || SjlFileInfo;
     return (Array.isArray(dirOrFilesArray) ?
         dirToJsonFromFiles(TypeRep, filterFn, dirOrFilesArray) :
         dirToJsonFromDir(TypeRep, filterFn, dirOrFilesArray));
         // .then(logInspection, logInspection)
 }
 
+// Inline test
 dirToJsonRecursive (Object, () => {}, path.join(__dirname, '../node_modules')).then(peakOnce);
 
 class SjlFileInfo {
@@ -143,6 +145,7 @@ class SjlFileInfo {
             }
         });
     }
+
     //
     // static FILE_TYPE_FILE () {
     //     return 'file';
