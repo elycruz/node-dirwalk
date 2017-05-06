@@ -1,6 +1,9 @@
 # node-directory-iterator
 Directory Iterator implementation for node.
 
+### Api:
+- **`dirToJsonR(TypeRep, dir)`** 
+
 ### References:
 Stat notes:
  - https://nodejs.org/api/fs.html#fs_class_fs_stats
