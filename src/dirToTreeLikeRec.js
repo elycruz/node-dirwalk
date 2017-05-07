@@ -5,6 +5,7 @@
 'use strict';
 
 const path = require('path'),
+
     SjlFileInfo = require('./SjlFileInfo'),
 
     {readDirectory, readStat, fileObject, log} = require('./utils'),
@@ -77,6 +78,5 @@ function dirToTreeLikeRec (TypeRep, dir) {
 dirToTreeLikeRec (SjlFileInfo, path.join(__dirname, '/../../gulpw-sample-app'))
     .then(JSON.stringify)
     .then(log);
-
 
 module.exports = dirToTreeLikeRec;
