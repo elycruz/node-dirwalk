@@ -4,12 +4,13 @@
 
 'use strict';
 
-const path = require('path'),
-    SjlFileInfoMethodNames = [
-        'isSymbolicLink', 'isFile', 'isDirectory',
-        'isBlockDevice', 'isCharacterDevice', 'isFIFO',
-        'isSocket'
-    ];
+const path = require('path')
+    // SjlFileInfoMethodNames = [
+    //     'isSymbolicLink', 'isFile', 'isDirectory',
+    //     'isBlockDevice', 'isCharacterDevice', 'isFIFO',
+    //     'isSocket'
+    // ]
+    ;
 
 function SjlFileInfo (fileName, filePath, stat) {
     const ext = path.extname(fileName),
