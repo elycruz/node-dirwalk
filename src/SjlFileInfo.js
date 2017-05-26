@@ -5,12 +5,14 @@
 'use strict';
 
 const path = require('path')
+
     // SjlFileInfoMethodNames = [
     //     'isSymbolicLink', 'isFile', 'isDirectory',
     //     'isBlockDevice', 'isCharacterDevice', 'isFIFO',
     //     'isSocket'
     // ]
-    ;
+
+;
 
 function SjlFileInfo (fileName, filePath, stat) {
     const ext = path.extname(fileName),
@@ -40,7 +42,7 @@ function SjlFileInfo (fileName, filePath, stat) {
             value: stat.birthtime,
             enumerable: true
         },
-        lastChangedStatus: {
+        lastChanged: {
             value: stat.ctime,
             enumerable: true
         },
@@ -53,7 +55,7 @@ function SjlFileInfo (fileName, filePath, stat) {
         }
     });
 }
-//
+
 // SjlFileInfoMethodNames.forEach(key => {
 //     SjlFileInfo.prototype[key] = function () {
 //         return this.stat[key]();

@@ -13,7 +13,7 @@ const path = require('path'),
     {pureCurry3: curry3,
         pureCurry4: curry4} = require('fjl'),
 
-    processForkOnStat = curry4(((filePath, fileName, TypeRep, stat) => {
+    processForkOnStat = curry4((filePath, fileName, TypeRep, stat) => {
         if (stat.isDirectory()) {
             return processDirectory(filePath, TypeRep, stat, fileName);
         }
@@ -21,7 +21,7 @@ const path = require('path'),
             return processFile(filePath, TypeRep, stat, fileName);
         }
         return Promise.resolve(fileObject(TypeRep, fileName, filePath, stat));
-    })),
+    }),
 
     processDirectory = curry4((dirPath, TypeRep, stat, dirName) => new Promise ((resolve, reject) => readDirectory(dirPath)
         .then(files => {
@@ -59,6 +59,13 @@ const path = require('path'),
             .then(resolve, reject);
     }));
 
+/**
+ * Returns a tree like object representing the passed in directory.
+ * @param [TypeRep=SjlFileInfo] {null|undefined|Function<fileName, filePath, stat>} - Type constructor for file and directory
+ *  object (essentially file object constructor).  Optional.  Default `SjlFileInfo`.
+ * @param dir {String} - Directory to parse.
+ * @returns {Promise<*>} - Promise of any.
+ */
 function dirToTreeLikeRec (TypeRep, dir) {
     TypeRep = TypeRep || SjlFileInfo;
     return readStat(dir)
@@ -68,15 +75,22 @@ function dirToTreeLikeRec (TypeRep, dir) {
         });
 }
 
-// function OtherFileInfo (fileName, filePath, stat) {
-//     this.fileName = fileName;
-//     this.filePath = filePath;
-//     Object.assign(this, stat);
-// }
+// Export utilities
+Object.defineProperties(dirToTreeLikeRec, {
+    SjlFileInfo: {value: SjlFileInfo, enumerable: true},
+    processFile: {value: processFile, enumerable: true},
+    processFiles: {value: processFiles, enumerable: true},
+    processDirectory: {value: processDirectory, enumerable: true},
+    processForkOnStat: {value: processForkOnStat, enumerable: true},
+    readDirectory: {value: readDirectory, enumerable: true},
+    readStat: {value: readStat, enumerable: true},
+    fileObject: {value: fileObject, enumerable: true}
+});
 
 // Inline test
 dirToTreeLikeRec (SjlFileInfo, path.join(__dirname, '/../../gulpw-sample-app'))
-    .then(JSON.stringify)
+    .then(obj => JSON.stringify(obj, null, 4))
+    // .then(JSON.stringify)
     .then(log);
 
 module.exports = dirToTreeLikeRec;
