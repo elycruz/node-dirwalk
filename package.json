@@ -2,7 +2,7 @@
   "name": "node-directory-iterator",
   "version": "1.0.0",
   "description": "Directory Iterator implementation for node.",
-  "main": "index.js",
+  "main": "src/dirToTreeLikeRec.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

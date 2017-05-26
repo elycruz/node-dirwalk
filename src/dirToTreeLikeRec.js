@@ -87,10 +87,4 @@ Object.defineProperties(dirToTreeLikeRec, {
     fileObject: {value: fileObject, enumerable: true}
 });
 
-// Inline test
-dirToTreeLikeRec (SjlFileInfo, path.join(__dirname, '/../../gulpw-sample-app'))
-    .then(obj => JSON.stringify(obj, null, 4))
-    // .then(JSON.stringify)
-    .then(log);
-
 module.exports = dirToTreeLikeRec;

@@ -30,7 +30,7 @@ function SjlFileInfo (fileName, filePath, stat) {
             value: basename,
             enumerable: true
         },
-        extension: {
+        extname: {
             value: ext,
             enumerable: true
         },
