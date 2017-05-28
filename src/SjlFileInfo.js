@@ -4,15 +4,13 @@
 
 'use strict';
 
-const path = require('path')
-
-    // SjlFileInfoMethodNames = [
-    //     'isSymbolicLink', 'isFile', 'isDirectory',
-    //     'isBlockDevice', 'isCharacterDevice', 'isFIFO',
-    //     'isSocket'
-    // ]
-
-;
+const fs = require('fs'),
+    path = require('path'),
+    SjlFileInfoMethodNames = [
+        'isSymbolicLink', 'isFile', 'isDirectory',
+        'isBlockDevice', 'isCharacterDevice', 'isFIFO',
+        'isSocket'
+    ];
 
 function SjlFileInfo (fileName, filePath, stat) {
     const ext = path.extname(fileName),
@@ -30,7 +28,7 @@ function SjlFileInfo (fileName, filePath, stat) {
             value: basename,
             enumerable: true
         },
-        extname: {
+        extension: {
             value: ext,
             enumerable: true
         },
@@ -55,11 +53,23 @@ function SjlFileInfo (fileName, filePath, stat) {
         }
     });
 }
+//
+// SjlFileInfo.prototype.isExecutable = function () {
+//     return this.stat.mode === fs.constants.X_OK;
+// };
+//
+// SjlFileInfo.prototype.isReadable = function () {
+//     return this.stat.mode === fs.constants.R_OK;
+// };
+//
+// SjlFileInfo.prototype.isWritable = function () {
+//     return this.stat.mode === fs.constants.W_OK;
+// };
 
-// SjlFileInfoMethodNames.forEach(key => {
-//     SjlFileInfo.prototype[key] = function () {
-//         return this.stat[key]();
-//     };
-// });
+SjlFileInfoMethodNames.forEach(key => {
+    SjlFileInfo.prototype[key] = function () {
+        return this.stat[key]();
+    };
+});
 
 module.exports = SjlFileInfo;

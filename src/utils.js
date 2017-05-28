@@ -2,11 +2,17 @@
  * Created by elyde on 5/6/2017.
  */
 
+'use strict';
+
 const fs = require('fs'),
 
     util = require('util'),
     inspect = util.inspect.bind(util),
     log = console.log.bind(console),
+
+    checkPermission = (stat, mask) => {
+        return parseInt(stat.mode.toString(8), 10) === mask;
+    },
 
     peakOnce = incoming => {
         log('peakOnce: ', inspect(incoming, {depth: 100}));
