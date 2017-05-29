@@ -6,14 +6,19 @@
 
 const {readDirectory, readStat, fsReadCallbackFactory} = require('./src/utils.js'),
     SjlFileInfo = require('./src/SjlFileInfo'),
-    dirToTreeLikeRec = require('./src/dirToTreeLikeRec'),
-    recWalkDir = require('./src/dirWalkRec');
+    dirWalkToTree = require('./src/dirWalkToTree'),
+    {dirWalk, processFile, processFiles, processDirectory,
+        processForkOnStat} = require('./src/dirWalk');
 
 module.exports = {
     readDirectory,
     readStat,
     fsReadCallbackFactory,
     SjlFileInfo,
-    dirToTreeLikeRec,
-    recWalkDir
+    processDirectory,
+    processFiles,
+    processFile,
+    processForkOnStat,
+    dirWalkToTree,
+    dirWalk
 };

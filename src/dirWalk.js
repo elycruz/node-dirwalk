@@ -4,7 +4,9 @@
 
 'use strict';
 
-const path = require('path'),
+const out = {},
+
+    path = require('path'),
 
     {readDirectory, readStat} = require('./utils'),
 
@@ -49,7 +51,7 @@ const path = require('path'),
             .then(resolve, reject);
     })),
 
-    dirWalkRec = (dirEffectFactory, fileEffectFactory, dir) => {
+    dirWalk = (dirEffectFactory, fileEffectFactory, dir) => {
         return readStat(dir)
             .then(stat => {
                 const dirName = path.basename(dir);
@@ -58,11 +60,12 @@ const path = require('path'),
     };
 
 // Export utilities
-Object.defineProperties(dirWalkRec, {
+Object.defineProperties(out, {
     processFile: {value: processFile, enumerable: true},
     processFiles: {value: processFiles, enumerable: true},
     processDirectory: {value: processDirectory, enumerable: true},
-    processForkOnStat: {value: processForkOnStat, enumerable: true}
+    processForkOnStat: {value: processForkOnStat, enumerable: true},
+    dirWalk: {value: dirWalk, enumerable: true}
 });
 
-module.exports = dirWalkRec;
+module.exports = out;

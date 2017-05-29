@@ -6,11 +6,11 @@
 
 const path = require('path'),
     {log} = require('../src/utils'),
-    dirRecWalk = require('../src/dirWalkRec'),
+    {dirWalk} = require('../src/dirWalk'),
     SjlFileInfo = require('./../src/SjlFileInfo');
 
 // Recursively walk directory
-dirRecWalk (
+dirWalk (
         // Directory effect factory
         (dirPath, stat, dirName) => (files) => {
                 const fileObj = new SjlFileInfo(dirName, dirPath, stat);

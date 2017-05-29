@@ -6,10 +6,10 @@
 
 const path = require('path'),
     {log} = require('../src/utils'),
-    dirToTreeLikeRec = require('../src/dirToTreeLikeRec');
+    dirWalkToTree = require('../src/dirWalkToTree');
 
 // Get tree structure
-dirToTreeLikeRec (null, path.join(__dirname, '/../'))
+dirWalkToTree (null, null, path.join(__dirname, '/../'))
     // .then(obj => JSON.stringify(obj, null, 4)) // pretty printed
     .then(JSON.stringify)
     .then(log);
