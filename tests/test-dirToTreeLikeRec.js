@@ -6,14 +6,12 @@
 
 const fs = require('fs'),
     path = require('path'),
-    {pureCurry2: curry2} = require('fjl'),
-    dirToTreeLikeRec = require('../src/dirToTreeLikeRec'),
-    {log} = require('../src/utils');
+    {log} = require('../src/utils'),
+    dirToTreeLikeRec = require('../src/dirToTreeLikeRec');
 
 // Get tree structure
 dirToTreeLikeRec (null, path.join(__dirname, '/../'))
-    .then(obj => JSON.stringify(obj, null, 4)) // pretty printed
-    // .then(JSON.stringify)
+    // .then(obj => JSON.stringify(obj, null, 4)) // pretty printed
+    .then(JSON.stringify)
     .then(log);
-
 

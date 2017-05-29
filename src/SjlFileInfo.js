@@ -15,11 +15,11 @@ const fs = require('fs'),
 
     statModeAboveMask = require('./statModeAboveMask'),
 
-    isReadable = stat => statModeAboveMask(statMode, 4),
+    isReadable = statMode => statModeAboveMask(statMode, 4),
 
-    isExecutable = stat => statModeAboveMask(statMode, 1),
+    isExecutable = statMode => statModeAboveMask(statMode, 1),
 
-    isWritable = stat => statModeAboveMask(statMode, 2);
+    isWritable = statMode => statModeAboveMask(statMode, 2);
 
 function SjlFileInfo (fileName, filePath, stat) {
     const ext = path.extname(fileName),

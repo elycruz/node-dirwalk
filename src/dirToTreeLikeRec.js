@@ -13,6 +13,14 @@ const path = require('path'),
     {pureCurry3: curry3,
         pureCurry4: curry4} = require('fjl'),
 
+    defaultDirectoryEffectFactory = (dirPath, TypeRep, stat, dirName) => processedFiles => {
+        const fileObj = fileObject(TypeRep, dirName, dirPath, stat);
+        fileObj.files = processedFiles;
+        return fileObj;
+    },
+
+    defaultFileEffectFactory = (filePath, TypeRep, stat, fileName, state) => () => fileObject(TypeRep, fileName, filePath, stat),
+
     processForkOnStat = curry4((filePath, fileName, TypeRep, stat) => {
         if (stat.isDirectory()) {
             return processDirectory(filePath, TypeRep, stat, fileName);
@@ -23,29 +31,22 @@ const path = require('path'),
         return Promise.resolve(fileObject(TypeRep, fileName, filePath, stat));
     }),
 
-    processDirectory = curry4((dirPath, TypeRep, stat, dirName) => new Promise ((resolve, reject) => readDirectory(dirPath)
-        .then(files => {
-            return processFiles(dirPath, TypeRep, files)
-                .then(processedFiles => {
-                    const fileObj = fileObject(TypeRep, dirName, dirPath, stat);
-                    fileObj.files = processedFiles;
-                    return fileObj;
-                });
-        })
-        // .then(peakOnce)
-        .then(resolve, reject))),
+    processDirectory = curry4((dirPath, TypeRep, stat, dirName) => new Promise ((resolve, reject) => {
+        readDirectory(dirPath)
+            .then(files => {
+                return processFiles(dirPath, TypeRep, files)
+                    .then(defaultDirectoryEffectFactory(dirPath, TypeRep, stat, dirName));
+            })
+            // .then(peakOnce)
+            .then(resolve, reject)
+    })),
 
     processFile = curry4((filePath, TypeRep, stat, fileName) => new Promise ((resolve, reject) => {
-        if (stat.isDirectory()) {
-            const fileObj = fileObject(TypeRep, fileName, filePath, stat);
-            return processDirectory(filePath, fileObj, TypeRep, stat, fileName)
-                .then(files => {
-                    fileObj.files = files;
-                    return fileObj;
-                })
-                .then(resolve, reject);
+        if (!stat.isDirectory()) {
+            resolve(defaultFileEffectFactory(filePath, TypeRep, stat, fileName)());
         }
-        resolve(fileObject(TypeRep, fileName, filePath, stat));
+        processDirectory(filePath, TypeRep, stat, fileName)
+            .then(resolve, reject);
     })),
 
     processFiles = curry3((dir, TypeRep, files) => new Promise ((resolve, reject) => {
