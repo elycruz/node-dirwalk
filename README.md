@@ -1,28 +1,28 @@
-# node-dir-to-tree-like
-Directory Iterator implementation for node.
+# node-dirwalk
+Directory walker (functional, uses promises and fully asynchronous).
 
-### Api:
-
-
-#### **`dirWalkRec (dirEffectFactory {Function}, fileEffectFactory {Function}, dir {String})`**
-**Functional signature**: `recWalkDir :: EffectFactory Ef => Ef a b c -> Ef e f g -> String -> Promise *`
-
+### Usage:
 ```
 const path = require('path'),
-    dirWalkRec = require('dirWalkRec'); 
+    dirWalk = require('node-dirwalk');
 
 // Recursively walk directory
-dirWalkRec (
+dirWalk (
         // Directory effect factory
         (dirPath, stat, dirName) => (files) => {
-            // console.log(filePath);
-            return {dirName, dirPath, files};
+            return {
+                fileName: dirName,
+                filePath: dirPath,
+                files
+            };
         },
 
         // File effect factory
         (filePath, stat, fileName) => () => {
-            // console.log(filePath);
-            return {fileName, filePath};
+            return {
+                fileName,
+                filePath
+            };
         },
 
         // Dir to walk
@@ -33,7 +33,24 @@ dirWalkRec (
     .catch(log);
 ```
 
-#### **`dirToTreeLikeRec (TypeRep {Function <fileName, filePath, stat>|undefined|null}, dir {String}) `**
+### Api:
+
+- dirWalk
+- dirWalkToTree
+- readDirectory
+- readStat
+- fsReadCallbackFactory
+- SjlFileInfo
+- processDirectory
+- processFiles
+- processFile
+- processForkOnStat
+
+#### **`dirWalk (dirEffectFactory {Function}, fileEffectFactory {Function}, dir {String}) : Promise <Object>`**
+**Functional signature**: `recWalkDir :: EffectFactory Ef => Ef a b c -> Ef e f g -> String -> Promise *`
+
+
+#### **`dirToTreeLikeRec (TypeRep {Function <fileName, filePath, stat>|undefined|null}, dir {String}) : Promise<Object>`**
     @Note TypeRep is optional (`dirToTreeLikeRec.SjlFileInfo` is used if not passed in)
     Returns an object representation of the passed in directory using `TypeRep` as the file object constructor; E.g.,
     ```
@@ -47,14 +64,19 @@ dirWalkRec (
         .then(log);
     ```
 
-#### **`SjlFileInfo {Function <fileName, filePath, stat>} - Default constructor used to construct file objects.  Note
-this is a minimalist constructor or data type representation (only has properties, no added methods of it's own).
+#### **`readDirectory (pathName {String}) : Promise <Array<Object>>`**
+#### **`readStat (filePath {String}) : Promise <fs.Stat>`**
+
+#### **`SjlFileInfo {Function <fileName, filePath, stat>}
+Default constructor used to construct file objects.  Note
+this is a minimalist constructor or data type representation (
+    only has properties, no added methods of it's own).
 
 ##### Properties:
 - `fileName` {String} {enumerable, configurable: false}
 - `filePath` {String} {enumerable, configurable: false}
 - `basename` {String} {enumerable, configurable: false}
-- `extname` {String} {enumerable, configurable: false}
+- `extension` {String} {enumerable, configurable: false}
 - `lastModified` {Date} {enumerable, configurable: false}
 - `createdDate` {Date} {enumerable, configurable: false}
 - `lastChanged` {Date} {enumerable, configurable: false}
