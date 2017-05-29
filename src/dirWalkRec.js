@@ -6,14 +6,10 @@
 
 const path = require('path'),
 
-    {readDirectory, readStat/*, log*/} = require('./utils'),
+    {readDirectory, readStat} = require('./utils'),
 
     {pureCurry4: curry4,
         pureCurry5: curry5} = require('fjl'),
-
-    directoryEffectFactory = (dirPath, stat, dirName) => processedFiles => null,
-
-    fileEffectFactory = (filePath, stat, fileName, state) => () => null,
 
     processForkOnStat = curry5((filePath, fileName, dirEffectFactory, fileEffectFactory, stat) => {
         if (stat.isDirectory()) {
@@ -51,24 +47,22 @@ const path = require('path'),
             })
         )
             .then(resolve, reject);
-    }));
+    })),
 
-function recWalkDir (dirEffectFactory, fileEffectFactory, dir) {
-    return readStat(dir)
-        .then(stat => {
-            const dirName = path.basename(dir);
-            return processForkOnStat(dir, dirName, dirEffectFactory, fileEffectFactory, stat);
-        });
-}
+    dirWalkRec = (dirEffectFactory, fileEffectFactory, dir) => {
+        return readStat(dir)
+            .then(stat => {
+                const dirName = path.basename(dir);
+                return processForkOnStat(dir, dirName, dirEffectFactory, fileEffectFactory, stat);
+            });
+    };
 
 // Export utilities
-Object.defineProperties(recWalkDir, {
+Object.defineProperties(dirWalkRec, {
     processFile: {value: processFile, enumerable: true},
     processFiles: {value: processFiles, enumerable: true},
     processDirectory: {value: processDirectory, enumerable: true},
-    processForkOnStat: {value: processForkOnStat, enumerable: true},
-    readDirectory: {value: readDirectory, enumerable: true},
-    readStat: {value: readStat, enumerable: true}
+    processForkOnStat: {value: processForkOnStat, enumerable: true}
 });
 
-module.exports = recWalkDir;
+module.exports = dirWalkRec;

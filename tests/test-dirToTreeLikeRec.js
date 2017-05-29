@@ -4,8 +4,7 @@
 
 'use strict';
 
-const fs = require('fs'),
-    path = require('path'),
+const path = require('path'),
     {log} = require('../src/utils'),
     dirToTreeLikeRec = require('../src/dirToTreeLikeRec');
 
@@ -14,4 +13,3 @@ dirToTreeLikeRec (null, path.join(__dirname, '/../'))
     // .then(obj => JSON.stringify(obj, null, 4)) // pretty printed
     .then(JSON.stringify)
     .then(log);
-

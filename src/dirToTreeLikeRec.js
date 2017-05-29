@@ -8,7 +8,7 @@ const path = require('path'),
 
     SjlFileInfo = require('./SjlFileInfo'),
 
-    {readDirectory, readStat, fileObject, log} = require('./utils'),
+    {readDirectory, readStat, fileObject} = require('./utils'),
 
     {pureCurry3: curry3,
         pureCurry4: curry4} = require('fjl'),
@@ -78,14 +78,10 @@ function dirToTreeLikeRec (TypeRep, dir) {
 
 // Export utilities
 Object.defineProperties(dirToTreeLikeRec, {
-    SjlFileInfo: {value: SjlFileInfo, enumerable: true},
     processFile: {value: processFile, enumerable: true},
     processFiles: {value: processFiles, enumerable: true},
     processDirectory: {value: processDirectory, enumerable: true},
-    processForkOnStat: {value: processForkOnStat, enumerable: true},
-    readDirectory: {value: readDirectory, enumerable: true},
-    readStat: {value: readStat, enumerable: true},
-    fileObject: {value: fileObject, enumerable: true}
+    processForkOnStat: {value: processForkOnStat, enumerable: true}
 });
 
 module.exports = dirToTreeLikeRec;

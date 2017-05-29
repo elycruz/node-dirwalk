@@ -2,8 +2,39 @@
 Directory Iterator implementation for node.
 
 ### Api:
-#### **`dirToTreeLikeRec (TypeRep {Function <fileName, filePath, stat>}, dir {String}) `**
-    @Note TypeRep is optional (`dirToTreeLikeRec.SjlFileInfo` is used if `!TypeRep`)
+
+
+#### **`dirWalkRec (dirEffectFactory {Function}, fileEffectFactory {Function}, dir {String})`**
+**Functional signature**: `recWalkDir :: EffectFactory Ef => Ef a b c -> Ef e f g -> String -> Promise *`
+
+```
+const path = require('path'),
+    dirWalkRec = require('dirWalkRec'); 
+
+// Recursively walk directory
+dirWalkRec (
+        // Directory effect factory
+        (dirPath, stat, dirName) => (files) => {
+            // console.log(filePath);
+            return {dirName, dirPath, files};
+        },
+
+        // File effect factory
+        (filePath, stat, fileName) => () => {
+            // console.log(filePath);
+            return {fileName, filePath};
+        },
+
+        // Dir to walk
+        path.join(__dirname, '/../')
+    )
+    .then(obj => JSON.stringify(obj, null, 4)) // pretty printed
+    .then(log)
+    .catch(log);
+```
+
+#### **`dirToTreeLikeRec (TypeRep {Function <fileName, filePath, stat>|undefined|null}, dir {String}) `**
+    @Note TypeRep is optional (`dirToTreeLikeRec.SjlFileInfo` is used if not passed in)
     Returns an object representation of the passed in directory using `TypeRep` as the file object constructor; E.g.,
     ```
     const path = require('path'),

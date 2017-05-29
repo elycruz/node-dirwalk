@@ -13,7 +13,9 @@ const fs = require('fs'),
         'isSocket'
     ],
 
-    statModeAboveMask = require('./statModeAboveMask'),
+    statModeAboveMask = (mode, mask) => {
+        return !!(mask & parseInt ((mode & 0o777).toString (8)[0], 10));
+    },
 
     isReadable = statMode => statModeAboveMask(statMode, 4),
 
@@ -80,5 +82,8 @@ SjlFileInfoMethodNames.forEach(key => {
         return this.stat[key]();
     };
 });
+
+Object.defineProperty(SjlFileInfo, 'statModeAboveMask',
+    {value: statModeAboveMask, enumerable: true});
 
 module.exports = SjlFileInfo;
