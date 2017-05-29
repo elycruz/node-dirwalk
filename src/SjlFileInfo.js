@@ -23,7 +23,7 @@ const fs = require('fs'),
 
     isWritable = statMode => statModeAboveMask(statMode, 2);
 
-function SjlFileInfo (fileName, filePath, stat) {
+function SjlFileInfo (fileName, filePath, stat, files) {
     const ext = path.extname(fileName),
         basename = path.basename(fileName, ext);
     Object.defineProperties(this, {
@@ -63,6 +63,13 @@ function SjlFileInfo (fileName, filePath, stat) {
             value: stat
         }
     });
+
+    if (files) {
+        Object.defineProperty(this, 'files', {
+            value: files,
+            enumerable: true
+        });
+    }
 }
 
 SjlFileInfo.prototype.isExecutable = function () {
