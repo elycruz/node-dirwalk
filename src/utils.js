@@ -10,13 +10,9 @@ const fs = require('fs'),
     inspect = util.inspect.bind(util),
     log = console.log.bind(console),
 
-    checkPermission = (stat, mask) => {
-        return parseInt(stat.mode.toString(8), 10) === mask;
-    },
-
     peakOnce = incoming => {
         log('peakOnce: ', inspect(incoming, {depth: 100}));
-        return incoming;
+        return Promise.resolve(incoming);
     },
 
     readDirectory = dir => new Promise((resolve, reject) => {

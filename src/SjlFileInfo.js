@@ -6,11 +6,20 @@
 
 const fs = require('fs'),
     path = require('path'),
+
     SjlFileInfoMethodNames = [
         'isSymbolicLink', 'isFile', 'isDirectory',
         'isBlockDevice', 'isCharacterDevice', 'isFIFO',
         'isSocket'
-    ];
+    ],
+
+    statModeAboveMask = require('./statModeAboveMask'),
+
+    isReadable = stat => statModeAboveMask(statMode, 4),
+
+    isExecutable = stat => statModeAboveMask(statMode, 1),
+
+    isWritable = stat => statModeAboveMask(statMode, 2);
 
 function SjlFileInfo (fileName, filePath, stat) {
     const ext = path.extname(fileName),
@@ -53,18 +62,18 @@ function SjlFileInfo (fileName, filePath, stat) {
         }
     });
 }
-//
-// SjlFileInfo.prototype.isExecutable = function () {
-//     return this.stat.mode === fs.constants.X_OK;
-// };
-//
-// SjlFileInfo.prototype.isReadable = function () {
-//     return this.stat.mode === fs.constants.R_OK;
-// };
-//
-// SjlFileInfo.prototype.isWritable = function () {
-//     return this.stat.mode === fs.constants.W_OK;
-// };
+
+SjlFileInfo.prototype.isExecutable = function () {
+    return isExecutable(this.stat.mode);
+};
+
+SjlFileInfo.prototype.isReadable = function () {
+    return isReadable(this.stat.mode);
+};
+
+SjlFileInfo.prototype.isWritable = function () {
+    return isWritable(this.stat.mode);
+};
 
 SjlFileInfoMethodNames.forEach(key => {
     SjlFileInfo.prototype[key] = function () {
