@@ -5,28 +5,26 @@
 'use strict';
 
 const path = require('path'),
-    {log} = require('../src/utils'),
-    {dirWalk} = require('../src/dirWalk'),
-    SjlFileInfo = require('./../src/SjlFileInfo');
+    log = console.log.bind(console),
+    dirWalk = require('../src/dirWalk');
 
 // Recursively walk directory
 dirWalk (
-        // Directory effect factory
-        (dirPath, stat, dirName) => (files) => {
-                const fileObj = new SjlFileInfo(dirName, dirPath, stat);
-                fileObj.files = files;
-            // console.log(filePath);
-            return fileObj;
-        },
 
-        // File effect factory
-        (filePath, stat, fileName) => () => {
-            // console.log(filePath);
-            return new SjlFileInfo(fileName, filePath, stat);
-        },
+    // Use default `TypeRep`
+    null,
 
-        // Dir to walk
-        path.join(__dirname, '/../')
-    )
-    .then(obj => JSON.stringify(obj, null, 4)) // pretty printed
+    // Directory effect factory
+    (dirPath, stat, dirName) => fileInfoObj => fileInfoObj,
+
+    // File effect factory
+    (filePath, stat, fileName) => fileInfoObj => fileInfoObj,
+
+    // Dir to walk
+    path.join(__dirname, '/../')
+)
+    // Pretty print compiled
+    .then(obj => JSON.stringify(obj, null, 4))
+
+    // Log result or catch
     .then(log, log);

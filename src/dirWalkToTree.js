@@ -8,30 +8,21 @@ const path = require('path'),
 
     SjlFileInfo = require('./SjlFileInfo'),
 
-    {dirWalk} = require('./dirWalk'),
+    dirWalk = require('./dirWalk'),
 
-    defaultFileEffectFactory = TypeRep => (filePath, stat, fileName) => (files) => {
-        return new TypeRep(fileName, filePath, stat, files);
-    },
+    id = x => x,
 
     /**
-     * Walks directories and constructs file and directory objects from type constructor.
+     * Walks directories and constructs file and directory objects from type constructor for each encountered item.
      * @param TypeRep {Function} - Type constructor.
-     * @param fileEffectFactory {Function<filePath, stat, fileName>}
      * @param dir {String} - Dir to walk.
      * @return {Promise<Object>}
      */
-    dirWalkToTree = (TypeRep, fileEffectFactory, dir) => {
-        TypeRep = TypeRep || SjlFileInfo;
-
-        fileEffectFactory = fileEffectFactory || defaultFileEffectFactory(TypeRep);
-
-        // Recursively walk directory
-        return dirWalk (
-            fileEffectFactory,
-            fileEffectFactory,
-            dir // dir to walk
-        );
-    };
+    dirWalkToTree = (TypeRep, dir) => dirWalk (
+        TypeRep,
+        (filePath, stat, fileName) => id,
+        (filePath, stat, fileName) => id,
+        dir // dir to walk
+    );
 
 module.exports = dirWalkToTree;

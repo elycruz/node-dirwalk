@@ -9,7 +9,7 @@ const path = require('path'),
     dirWalkToTree = require('../src/dirWalkToTree');
 
 // Get tree structure
-dirWalkToTree (null, null, path.join(__dirname, '/../'))
+dirWalkToTree (null, path.join(__dirname, '/../'))
     // .then(obj => JSON.stringify(obj, null, 4)) // pretty printed
     .then(JSON.stringify)
-    .then(log);
+    .then(log, log);

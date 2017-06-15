@@ -1,6 +1,6 @@
 {
   "name": "node-dirwalk",
-  "version": "0.5.0",
+  "version": "0.8.0",
   "description": "Directory walker.",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/elycruz/node-directory-iterator.git"
   },
-  "keywords": ["promise", "asynchronous", "async", "directory", "filesystem"],
+  "keywords": ["promise", "asynchronous", "async", "directory", "filesystem", "reader"],
   "author": "",
   "license": "ISC",
   "bugs": {
