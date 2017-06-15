@@ -170,7 +170,12 @@ Default data constructor used to construct file objects.
 - `files` {Array<SjlFileInfo>}
 
 ### References:
-Stat notes:
+**Stat notes**:
  - https://nodejs.org/api/fs.html#fs_class_fs_stats
  - http://www.computerworld.com/article/2694880/unix-stat-more-than-ls.html
  - https://nodejs.org/api/fs.html#fs_fs_readdir_path_options_callback
+**Directory Iterator implementations**:
+ - http://php.net/manual/en/class.splfileinfo.php
+ - http://php.net/manual/en/class.directoryiterator.php
+**Recursive Directory Iterator implementations**:
+ - http://php.net/manual/en/class.recursivedirectoryiterator.php
