@@ -6,16 +6,11 @@
 
 const path = require('path'),
 
-    {readDirectory, readStat} = require('./utils'),
+    {readDirectory, readStat, curry} = require('./utils'),
 
     SjlFileInfo = require('./SjlFileInfo'),
 
-    {pureCurryN: curryN,
-        pureCurry5: curry5} = require('fjl'),
-
-    curry6 = fn => curryN(fn, 6),
-
-    processForkOnStat = curry6((TypeRep, filePath, fileName, dirEffectFactory, fileEffectFactory, stat) => {
+    processForkOnStat = curry((TypeRep, filePath, fileName, dirEffectFactory, fileEffectFactory, stat) => {
         if (stat.isDirectory()) {
             return processDirectory(TypeRep, filePath, stat, dirEffectFactory, fileEffectFactory, fileName);
         }
@@ -25,7 +20,7 @@ const path = require('path'),
         return fileEffectFactory(filePath, stat, fileName)(new TypeRep(fileName, filePath, stat));
     }),
 
-    processDirectory = curry5((TypeRep, dirPath, stat, dirEffectFactory, fileEffectFactory, dirName) => new Promise ((resolve, reject) => {
+    processDirectory = curry((TypeRep, dirPath, stat, dirEffectFactory, fileEffectFactory, dirName) => new Promise ((resolve, reject) => {
         readDirectory(dirPath)
             .then(files => {
                 return processFiles(TypeRep, dirPath, dirEffectFactory, fileEffectFactory, files)
@@ -34,7 +29,7 @@ const path = require('path'),
             .then(resolve, reject)
     })),
 
-    processFile = curry5((TypeRep, filePath, stat,  dirEffectFactory, fileEffectFactory, fileName) => new Promise ((resolve, reject) => {
+    processFile = curry((TypeRep, filePath, stat,  dirEffectFactory, fileEffectFactory, fileName) => new Promise ((resolve, reject) => {
         if (!stat.isDirectory()) {
             resolve(fileEffectFactory(filePath, stat, fileName)(new TypeRep(fileName, filePath, stat)));
         }
@@ -42,7 +37,7 @@ const path = require('path'),
             .then(resolve, reject);
     })),
 
-    processFiles = curry5((TypeRep, dir, dirEffectFactory, fileEffectFactory, files) => new Promise ((resolve, reject) => {
+    processFiles = curry((TypeRep, dir, dirEffectFactory, fileEffectFactory, files) => new Promise ((resolve, reject) => {
         return Promise.all(
             files.map(fileName => {
                 const filePath = path.join(dir, fileName);

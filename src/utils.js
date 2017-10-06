@@ -31,12 +31,29 @@ const fs = require('fs'),
     },
 
     fileObject = (TypeRep, fileName, filePath, stat) => new TypeRep(
-        fileName, filePath, stat);
+        fileName, filePath, stat),
+
+    /**
+     * Curries a functionOps based on it's defined arity (argument's arrayOps expected length).
+     * @function module:functionOps_.curry
+     * @param fn {Function}
+     * @param argsToCurry {...*}
+     * @returns {Function}
+     */
+    curry = (fn, ...argsToCurry) => {
+        return (...args) => {
+            const concatedArgs = argsToCurry.concat(args);
+            return concatedArgs.length < fn.length ?
+                curry.apply(null, [fn].concat(concatedArgs)) :
+                fn.apply(null, concatedArgs);
+        };
+    };
 
 module.exports = {
     readDirectory,
     readStat,
     fsReadCallbackFactory,
     fileObject,
-    log
+    log,
+    curry
 };
