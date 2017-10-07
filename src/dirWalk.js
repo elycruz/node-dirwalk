@@ -6,7 +6,9 @@
 
 const path = require('path'),
 
-    {readDirectory, readStat, curry} = require('./utils'),
+    {readDirectory, readStat} = require('./utils'),
+
+    {curry} = require('fjl'),
 
     SjlFileInfo = require('./SjlFileInfo'),
 
