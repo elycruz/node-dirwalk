@@ -1,6 +1,6 @@
 {
   "name": "node-dirwalk",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "Directory walker.",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,6 @@
   },
   "homepage": "https://github.com/elycruz/node-directory-iterator#readme",
   "dependencies": {
-    "fjl": "^1.10.1"
+    "fjl": "^1.12.6"
   }
 }
