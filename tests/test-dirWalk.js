@@ -2,7 +2,7 @@
  * test-dirWalk.js
  */
 const path = require('path'),
-
+  fs = require('fs'),
   {log, error} = console,
 
   dirWalk = require('../src/dirWalk'),

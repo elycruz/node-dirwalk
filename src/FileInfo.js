@@ -24,10 +24,9 @@ const path = require('path'),
  * Simple file info class - Provides a basic representation of a FileObject;
  *
  * **Note:** This data class doesn't contain a `type` property - if a different JSON representation,
- * other than the one provided via this class, is required this class can be extended with required repr.
- * or in the `dirWalk`/`dirWalkToTree` method 'effect' methods you can query the `isFile()`/`isDirectory()`
+ * other than the one provided, is required this class can be extended with required or in the `dirWalk` method 'effect' methods you can query the `isFile()`/`isDirectory()`
  * methods to know if the visited directory tree entry is a file, and/or directory, or not (this approach
- * can be used to add required properties to resulting tree entry object to return (from `dirWalk`, `dirWalkToTree`).
+ * can be used to add required properties to resulting tree entry object to return (from `dirWalk` method)).
  */
 class FileInfo {
   static of(filePath, fileName, stat, files) {

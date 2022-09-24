@@ -177,7 +177,8 @@ class DirectoryWalker {
     } else if (stat.isFile()) {
       return this.processFile(filePath, fileName, stat);
     }
-    return Promise.resolve(this.fileHandler(filePath, fileName, stat));
+    return Promise.resolve(stat.mode & fs.constants.F_OK ?
+      this.fileHandler(filePath, fileName, stat) : null);
   }
 }
 
