@@ -109,4 +109,4 @@ FileInfoMethodNames.forEach(key => {
 Object.defineProperty(FileInfo, 'statModeAboveMask',
   {value: statModeAboveMask, enumerable: true});
 
-module.exports = FileInfo;
+module.exports = {FileInfo};

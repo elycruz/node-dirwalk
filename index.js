@@ -2,12 +2,10 @@
  * @module node-dirwalk
  */
 
-const FileInfo = require('./src/FileInfo'),
-    dirWalkToTree = require('./src/dirWalkToTree'),
-    dirWalk = require('./src/dirWalk');
+const {FileInfo} = require('./src/FileInfo'),
+  dirWalk = require('./src/dirWalk');
 
 module.exports = {
-    FileInfo,
-    dirWalkToTree,
-    dirWalk
+  FileInfo,
+  dirWalk
 };

@@ -1,57 +1,92 @@
 # node-dirwalk
 
-Functional directory walking via promises. The library offers you two functions for recursively walking a directory.
-One, `dirWalk`, offers you fine grain control for when needing to recursively walk through a directory
-and the other, `dirWalkToTree`, does the work for you when all you need is a tree representation of a directory.
-The library also offers one data type, `FileInfo`, which can be overridden via the first
-parameter of `dirWalk` and `dirWalkToTree`.
+Trivial, asynchronous, directory walker. The library offers you one function `dirWalk`, which allows arbitrary actions
+to be carried out for visited directories (everything works with promises internally, so all micro task actions are
+supported), and a file/directory representation constructor - useful for cases where you need a basic 'FileInfo' object
+to represent your directory, which contains other 'FileInfo' objects, etc..
 
 ### Usage:
 
-#### Minimalistic approach:
-
-##### Using `dirWalkToTree()`:
+#### Getting a tree representation:
 
 ```javascript
 
 const path = require('path'),
   {log, error} = console,
-  {dirWalkToTree} = require('./');
+  {dirWalk} = require('./'),
+  somePath = path.join(__dirname, '/../');
 
-// Get tree structure
-dirWalkToTree(
-  // Path to step through
-  path.join(__dirname, '/../')
-)
+dirWalk(somePath)
+
   // Return compiled tree to JSON
   .then(JSON.stringify)
 
-  // Print and/or catch error
-  .then(log, error);
+  // Print and/or catch any resulting errors
+  .then((tree) => log(tree, `${somePath} walked successfully.`), error);
 
 ```
 
-##### Using `dirWalk()` directly (achieves same as above but manually):
+##### Getting a tree representation with filtering:
 
 ```javascript
 
 const path = require('path'),
+  fs = require('fs'),
   {log, error} = console.log.bind(console),
   dirWalk = require('./');
 
-// Recursively walk directory
 dirWalk(
-  // Dir to walk
   path.join(__dirname, '/../'),
+  {
+    statGetter: (filePath, currentWalkDepth) => {
+      const stat = fs.lstat(filePath); // Note any stat format, that may be required, can used here;
+      // E.g., fs.stat(), fs.lstat(), fs.fstat(), etc. (@see fs.Stats docs for more
+      // https://nodejs.org/api/fs.html#class-fsstats)
 
-  // Directory effect factory
-  (dirPath, dirName, stat) => fileInfoObj => fileInfoObj,   // We're not doing any work here,
-                                                            // allowing created file object to pass through
-                                                            // File effect factory
-  (filePath, fileName, stat) => fileInfoObj => fileInfoObj, // ""
+      // Check if filePath is a directory, and whether or not it should be skipped (
+      // falsy value return here signals to `dirWalk` that encountered file path should be
+      // ignored/skipped
+      return stat.isDirectory() && (filePath[0] === '.' || filePath === 'node_modules') ?
+        null : stat;
+    }
+  }
 )
-  // Pretty print compiled
-  .then(obj => JSON.stringify(obj, null, 4))
+  // Do something with resulting tree
+  .then(dirTree => JSON.stringify(dirTree, null, 4))
+
+  // Log result or catch error
+  .then(log, error);
+```
+
+##### Getting a custom tree representation:
+
+If a file info object, other than the supplied one (`FileInfo`) is required you can used/construct your desired
+on via the `dirHandler`, and `fileHandler` options.
+
+```javascript
+
+const path = require('path'),
+  fs = require('fs'),
+  {log, error} = console.log.bind(console),
+  customFileHandler = 
+  dirWalk = require('./');
+
+dirWalk(
+  path.join(__dirname, '/../'),
+  {
+    dirHandler: (dirPath, dirName, stat, files) => ({
+      filePath: dirPath,
+      fileName: dirName,
+      files,
+    }),
+    fileHandler: (filePath, fileName, stat) => ({
+      filePath,
+      fileName
+    }),
+  }
+)
+  // Do something with resulting tree
+  .then(dirTree => JSON.stringify(dirTree, null, 4))
 
   // Log result or catch error
   .then(log, error);
@@ -71,7 +106,6 @@ const path = require('path'),
 
 // Recursively walk directory
 dirWalk(
-    
   // Dir to walk
   path.join(__dirname, '/../'),
 
@@ -110,18 +144,20 @@ dirWalk(
 ### Api:
 
 - dirWalk
-- dirWalkToTree
+- dirWalkOptions
 - FileInfo
 
-#### `dirWalk (dir: string, dirEffectHandler = () => x => x, fileEffectHandler = () => x => x, TypeRep = FileInfo) => Promise<any>`
+####
+
+#### `dirWalk (dir: string, dirHandler = () => x => x, fileHandler = () => x => x, TypeRep = FileInfo) => Promise<any>`
 
 - **`dir`** {String} - Directory to walk.
-- **`dirEffectHandler`** {Function<filePath, fileName, stat{fs.Stat}>:Function<fileInfoObj{TypeRep}, files{Array}>} -
+- **`dirHandler`** {Function<filePath, fileName, stat{fs.Stat}>:Function<fileInfoObj{TypeRep}, files{Array}>} -
   Call back factory that returns the callback that handles visits to directories
   **Note** directory recursion is handled for you by `dirWalk`, the returned callback
   here is meant to handle the construction or returning of the data object
   representing the visited directory.
-- **`fileEffectHandler`** {Function<filePath, fileName, stat{fs.Stat}>:Function<fileInfoObj{TypeRep}>} -
+- **`fileHandler`** {Function<filePath, fileName, stat{fs.Stat}>:Function<fileInfoObj{TypeRep}>} -
   Same as above but the returned callback doesn't receive a `files` argument.
 - **`TypeRep`** {Constructor<filePath, fileName, stat{fs.Stat}> | null | undefined} -
   File node data type constructor. Optional. Default `FileInfo`.
