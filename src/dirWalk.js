@@ -3,8 +3,11 @@
  */
 
 const path = require('path'),
+  fs = require('fs'),
 
-  {readDirectory, readStat} = require('./utils'),
+  {readdir: readDirectory, lstat: readStat} = fs.promises,
+
+  {getUnaryId} = require('./utils');
 
   FileInfo = require('./FileInfo');
 
@@ -15,7 +18,7 @@ const path = require('path'),
  * @type function (filePath, fileName, stat) => (fileInfoObj) => any,
  * @param {string} filePath
  * @param {string} fileName
- * @param {fs.Stats} stat
+ * @param {Stats} stat
  * @returns {(FileInfo) => any}
  */
 
@@ -52,7 +55,7 @@ class DirectoryWalker {
   /**
    * @param {string} dirPath
    * @param {string} dirName
-   * @param {fs.Stats} stat
+   * @param {Stats} stat
    * @returns {Promise<any>}
    */
   processDirectory(dirPath, dirName, stat) {
@@ -67,7 +70,7 @@ class DirectoryWalker {
   /**
    * @param {string} filePath
    * @param {string} fileName
-   * @param {fs.Stats} stat
+   * @param {Stats} stat
    * @returns {Promise<any>}
    */
   processFile(filePath, fileName, stat) {
@@ -103,7 +106,7 @@ class DirectoryWalker {
   /**
    * @param {string} filePath
    * @param {string} fileName
-   * @param {fs.Stats} stat
+   * @param {Stats} stat
    * @returns {Promise<any>}
    */
   processForkOnStat(filePath, fileName, stat) {
@@ -123,7 +126,12 @@ class DirectoryWalker {
  * @param {FileInfo} [TypeRep=FileInfo]
  * @returns {Promise<any>}
  */
-const dirWalk = (dir, fileEffectFactory = id, dirEffectFactory = id, TypeRep = FileInfo) => {
+const dirWalk = (
+  dir,
+  fileEffectFactory = getUnaryId,
+  dirEffectFactory = getUnaryId,
+  TypeRep = FileInfo
+) => {
   const walker = new DirectoryWalker(dirEffectFactory, fileEffectFactory, TypeRep);
   return readStat(dir)
     .then(stat => {

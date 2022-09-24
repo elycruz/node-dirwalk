@@ -1,6 +1,6 @@
 {
   "name": "node-dirwalk",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.1",
   "description": "Directory walker.",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "reader"
   ],
   "author": "Ely Cruz <elycruz-at-elycruz-dot-com>",
-  "license": "ISC",
+  "license": "GPL",
   "bugs": {
     "url": "https://github.com/elycruz/node-dirwalk/issues"
   },

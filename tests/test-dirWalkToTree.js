@@ -1,13 +1,11 @@
 /**
- * Created by elyde on 5/28/2017.
+ * Test output of `dirWalkToTree` method.
  */
 
-'use strict';
-
 const path = require('path'),
-    {log} = require('../src/utils'),
+    {log, error} = console,
     dirWalkToTree = require('../src/dirWalkToTree');
 
 dirWalkToTree (path.join(__dirname, '/../'))
     .then(obj => JSON.stringify(obj, null, 4))
-    .then(log, log);
+    .then(log, error);

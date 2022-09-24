@@ -5,9 +5,9 @@
 
 const dirWalk = require('./dirWalk'),
 
-  {FileInfo} = require("../index"),
+  {getUnaryId} = require("./utils"),
 
-  id = x => x,
+  {FileInfo} = require("../index"),
 
   /**
    * Walks directories and constructs file and directory objects from type constructor for each encountered item.
@@ -17,8 +17,8 @@ const dirWalk = require('./dirWalk'),
    */
   dirWalkToTree = (dir, TypeRep = FileInfo) => dirWalk(
     dir,
-    () => id, // Return resulting `FileInfo` object, as is
-    () => id, // ""
+    getUnaryId, // Return resulting `FileInfo` object, as is
+    getUnaryId, // ""
     TypeRep,
   );
 
