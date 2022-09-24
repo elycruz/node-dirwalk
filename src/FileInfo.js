@@ -30,7 +30,11 @@ const path = require('path'),
  * can be used to add required properties to resulting tree entry object to return (from `dirWalk`, `dirWalkToTree`).
  */
 class FileInfo {
-  constructor(fileName, filePath, stat, files) {
+  static of(filePath, fileName, stat, files) {
+    return new FileInfo(filePath, fileName, stat, files);
+  }
+
+  constructor(filePath, fileName, stat, files) {
     const ext = path.extname(fileName),
       basename = path.basename(fileName, ext);
 

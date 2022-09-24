@@ -113,15 +113,15 @@ dirWalk(
 - dirWalkToTree
 - FileInfo
 
-#### `dirWalk (dir: string, dirEffectFactory = () => x => x, fileEffectFactory = () => x => x, TypeRep = FileInfo) => Promise<any>`
+#### `dirWalk (dir: string, dirEffectHandler = () => x => x, fileEffectHandler = () => x => x, TypeRep = FileInfo) => Promise<any>`
 
 - **`dir`** {String} - Directory to walk.
-- **`dirEffectFactory`** {Function<filePath, fileName, stat{fs.Stat}>:Function<fileInfoObj{TypeRep}, files{Array}>} -
+- **`dirEffectHandler`** {Function<filePath, fileName, stat{fs.Stat}>:Function<fileInfoObj{TypeRep}, files{Array}>} -
   Call back factory that returns the callback that handles visits to directories
   **Note** directory recursion is handled for you by `dirWalk`, the returned callback
   here is meant to handle the construction or returning of the data object
   representing the visited directory.
-- **`fileEffectFactory`** {Function<filePath, fileName, stat{fs.Stat}>:Function<fileInfoObj{TypeRep}>} -
+- **`fileEffectHandler`** {Function<filePath, fileName, stat{fs.Stat}>:Function<fileInfoObj{TypeRep}>} -
   Same as above but the returned callback doesn't receive a `files` argument.
 - **`TypeRep`** {Constructor<filePath, fileName, stat{fs.Stat}> | null | undefined} -
   File node data type constructor. Optional. Default `FileInfo`.

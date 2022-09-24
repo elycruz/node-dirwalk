@@ -7,19 +7,57 @@ const path = require('path'),
 
   {readdir: readDirectory, lstat: readStat} = fs.promises,
 
-  {getUnaryId} = require('./utils');
+  FileInfo = require('./FileInfo'),
 
-FileInfo = require('./FileInfo');
+  /**
+   * @type {StatGetter}
+   */
+  defaultStatGetter = filePath => readStat(filePath),
+
+  /**
+   * @type {FileHandler}
+   */
+  defaultDirHandler = (dirPath, dirName, stat, files) =>
+    new FileInfo(dirPath, dirName, stat, files),
+
+  /**
+   * @type {FileHandler}
+   */
+  defaultFileHandler = (filePath, fileName, stat, files = null) =>
+    new FileInfo(filePath, fileName, stat, files);
+;
 
 /**
- * @typedef FileEffectFactory
- * @description Factory function that returns a function that returns the result/side effect to apply
+ * @typedef FileHandler
+ *
+ * @description Handler function that returns a function that returns the result/side effect to apply
  *  to tree structure returned by `dirWalk`, and `dirWalkTree` methods; See tests, for more.
- * @type function (filePath, fileName, stat) => (fileInfoObj) => any,
+ *
+ * @type function (filePath, fileName, stat, files = null) => (fileInfoObj) => any,
  * @param {string} filePath
  * @param {string} fileName
  * @param {Stats} stat
- * @returns {(FileInfo) => any}
+ * @param {any[]} [files = null] - Optional - Should only be populated for directories.
+ * @returns {FileInfo}
+ */
+
+/**
+ * @typedef StatGetter
+ *
+ * A function that takes a filepath and returns an `fs.Stats` object.
+ *
+ * @type (filePath) => Promise<fs.Stats>
+ * @param {string} filePath
+ * @returns {fs.Stats}
+ */
+
+/**
+ * @interface DirWalkOptions
+ *
+ * @property {FileHandler} fileHandler
+ * @property {FileHandler} dirHandler
+ * @property {StatGetter} statGetter
+ * @property {FileInfo} TypeRep - Entry type representation.
  */
 
 /**
@@ -32,23 +70,35 @@ class DirectoryWalker {
   TypeRep = FileInfo;
 
   /**
-   * @type {FileEffectFactory}
+   * @type {FileHandler}
    */
-  dirEffectFactory = (dirPath, dirName, stat) => (fileInfo) => fileInfo;
+  dirHandler = defaultDirHandler;
 
   /**
-   * @type {FileEffectFactory}
+   * @type {FileHandler}
    */
-  fileEffectFactory = (filePath, fileName, stat) => (fileInfo) => fileInfo;
+  fileHandler = defaultFileHandler;
 
   /**
-   * @param {FileEffectFactory} dirEffectFactory
-   * @param {FileEffectFactory} fileEffectFactory
+   * @type {StatGetter} - Takes a file path and returns a Promise that resolves to a `Stats` object.
+   */
+  statGetter = defaultStatGetter;
+
+  /**
+   * @param {FileHandler} dirHandler
+   * @param {FileHandler} fileHandler
+   * @param {StatGetter} statGetter
    * @param {FileInfo} TypeRep
    */
-  constructor(fileEffectFactory, dirEffectFactory, TypeRep = FileInfo) {
-    this.dirEffectFactory = dirEffectFactory;
-    this.fileEffectFactory = fileEffectFactory;
+  constructor(
+    fileHandler = defaultFileHandler,
+    dirHandler = defaultDirHandler,
+    statGetter = defaultStatGetter,
+    TypeRep = FileInfo
+  ) {
+    this.dirHandler = dirHandler;
+    this.fileHandler = fileHandler;
+    this.statGetter = statGetter;
     this.TypeRep = TypeRep;
   }
 
@@ -59,12 +109,10 @@ class DirectoryWalker {
    * @returns {Promise<any>}
    */
   processDirectory(dirPath, dirName, stat) {
-    const {dirEffectFactory, TypeRep} = this;
+    const {dirHandler} = this;
     return readDirectory(dirPath)
       .then(files => this.processFiles(dirPath, files))
-      .then(files => dirEffectFactory(dirPath, dirName, stat)(
-        new TypeRep(dirName, dirPath, stat, files), files)
-      );
+      .then(files => dirHandler(dirPath, dirName, stat, files));
   }
 
   /**
@@ -74,10 +122,10 @@ class DirectoryWalker {
    * @returns {Promise<any>}
    */
   processFile(filePath, fileName, stat) {
-    const {fileEffectFactory, TypeRep} = this;
+    const {fileHandler} = this;
     return new Promise((resolve, reject) => {
       if (!stat.isDirectory()) {
-        resolve(fileEffectFactory(filePath, fileName, stat)(new TypeRep(fileName, filePath, stat)));
+        resolve(fileHandler(filePath, fileName, stat));
       }
       this.processDirectory(filePath, fileName, stat)
         .then(resolve, reject);
@@ -115,25 +163,26 @@ class DirectoryWalker {
     } else if (stat.isFile()) {
       return this.processFile(filePath, fileName, stat);
     }
-    return this.fileEffectFactory(filePath, fileName, stat)(new this.TypeRep(fileName, filePath, stat));
+    return Promise.resolve(this.fileHandler(filePath, fileName, stat));
   }
 }
 
 /**
  * @param {string} dir
- * @param {FileEffectFactory} [fileEffectFactory=id]
- * @param {FileEffectFactory} [dirEffectFactory=id]
- * @param {FileInfo} [TypeRep=FileInfo]
+ * @param {DirWalkOptions}
  * @returns {Promise<any>}
  */
 const dirWalk = (
   dir,
-  fileEffectFactory = getUnaryId,
-  dirEffectFactory = getUnaryId,
-  TypeRep = FileInfo
+  {
+    fileHandler = defaultFileHandler,
+    dirHandler = defaultDirHandler,
+    statGetter = defaultStatGetter,
+    TypeRep = FileInfo
+  }
 ) => {
-  const walker = new DirectoryWalker(fileEffectFactory, dirEffectFactory, TypeRep);
-  return readStat(dir)
+  const walker = new DirectoryWalker(fileHandler, dirHandler, readStat, TypeRep);
+  return statGetter(dir)
     .then(stat => {
       const dirName = path.basename(dir);
       return walker.processForkOnStat(dir, dirName, stat);

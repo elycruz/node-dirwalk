@@ -5,8 +5,6 @@
 
 const dirWalk = require('./dirWalk'),
 
-  {getUnaryId} = require("./utils"),
-
   {FileInfo} = require("../index"),
 
   /**
@@ -17,9 +15,7 @@ const dirWalk = require('./dirWalk'),
    */
   dirWalkToTree = (dir, TypeRep = FileInfo) => dirWalk(
     dir,
-    getUnaryId, // Return resulting `FileInfo` object, as is
-    getUnaryId, // ""
-    TypeRep,
+    {TypeRep},
   );
 
 module.exports = dirWalkToTree;

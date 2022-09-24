@@ -1,28 +1,29 @@
 /**
- * Created by elyde on 5/28/2017.
+ * test-dirWalk.js
  */
-
-'use strict';
-
 const path = require('path'),
+
   {log, error} = console,
-  {assert} = require('util'),
-  dirWalk = require('../src/dirWalk');
+
+  dirWalk = require('../src/dirWalk'),
+
+  {FileInfo} = require("../index");
 
 // Recursively walk directory
 dirWalk(
   // Dir to walk
   path.join(__dirname, '/../'),
+  {
+    // File effect
+    fileHandler: FileInfo.of,
 
-  // File effect factory
-  (filePath,  fileName, stat) => fileInfoObj => fileInfoObj,
-
-  // Directory effect factory
-  (dirPath,dirName, stat) => fileInfoObj =>
-    (fileInfoObj.fileName || '')[0] === '.' ? null : fileInfoObj, // Ignore dot directories ('./.git', etc.).
+    // Directory effect
+    dirHandler: (dirPath, dirName, stat, files) =>
+      dirName[0] === '.' ? null : FileInfo.of(dirPath, dirName, stat, files) // Ignore dot directories ('./.git', etc.).
+  },
 )
   // Pretty print compiled
   .then(obj => JSON.stringify(obj, null, 4))
 
   // Log result or catch
-  .then(log, log);
+  .then(log, error);
