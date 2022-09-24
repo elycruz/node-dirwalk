@@ -11,8 +11,8 @@ const dirWalk = require('./dirWalk'),
 
   /**
    * Walks directories and constructs file and directory objects from type constructor for each encountered item.
-   * @param dir {String} - Dir to walk.
-   * @param [TypeRep=FileInfo] - Type constructor - Optional.
+   * @param {string} dir - Dir to walk.
+   * @param {FileInfo} [TypeRep=FileInfo] - Type constructor - Optional.
    * @return {Promise<Object>} - An object representing a directory tree.
    */
   dirWalkToTree = (dir, TypeRep = FileInfo) => dirWalk(

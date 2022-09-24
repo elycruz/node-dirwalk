@@ -9,7 +9,7 @@ const path = require('path'),
 
   {getUnaryId} = require('./utils');
 
-  FileInfo = require('./FileInfo');
+FileInfo = require('./FileInfo');
 
 /**
  * @typedef FileEffectFactory
@@ -46,7 +46,7 @@ class DirectoryWalker {
    * @param {FileEffectFactory} fileEffectFactory
    * @param {FileInfo} TypeRep
    */
-  constructor(dirEffectFactory, fileEffectFactory, TypeRep = FileInfo) {
+  constructor(fileEffectFactory, dirEffectFactory, TypeRep = FileInfo) {
     this.dirEffectFactory = dirEffectFactory;
     this.fileEffectFactory = fileEffectFactory;
     this.TypeRep = TypeRep;
@@ -132,7 +132,7 @@ const dirWalk = (
   dirEffectFactory = getUnaryId,
   TypeRep = FileInfo
 ) => {
-  const walker = new DirectoryWalker(dirEffectFactory, fileEffectFactory, TypeRep);
+  const walker = new DirectoryWalker(fileEffectFactory, dirEffectFactory, TypeRep);
   return readStat(dir)
     .then(stat => {
       const dirName = path.basename(dir);

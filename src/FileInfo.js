@@ -20,6 +20,15 @@ const path = require('path'),
 
   isWritable = statMode => statModeAboveMask(statMode, 2);
 
+/**
+ * Simple file info class - Provides a basic representation of a FileObject;
+ *
+ * **Note:** This data class doesn't contain a `type` property - if a different JSON representation,
+ * other than the one provided via this class, is required this class can be extended with required repr.
+ * or in the `dirWalk`/`dirWalkToTree` method 'effect' methods you can query the `isFile()`/`isDirectory()`
+ * methods to know if the visited directory tree entry is a file, and/or directory, or not (this approach
+ * can be used to add required properties to resulting tree entry object to return (from `dirWalk`, `dirWalkToTree`).
+ */
 class FileInfo {
   constructor(fileName, filePath, stat, files) {
     const ext = path.extname(fileName),
@@ -64,9 +73,11 @@ class FileInfo {
     });
 
     if (files) {
-      Object.defineProperty(this, 'files', {
-        value: files,
-        enumerable: true
+      Object.defineProperties(this, {
+        files: {
+          value: files,
+          enumerable: true
+        }
       });
     }
   }
