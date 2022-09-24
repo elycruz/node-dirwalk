@@ -4,11 +4,11 @@
   "description": "Directory walker.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/test-dirWalk.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/elycruz/node-directory-iterator.git"
+    "url": "git+https://github.com/elycruz/node-dirwalk.git"
   },
   "keywords": [
     "promise",
@@ -18,13 +18,11 @@
     "filesystem",
     "reader"
   ],
-  "author": "",
+  "author": "Ely Cruz <elycruz-at-elycruz-dot-com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/elycruz/node-directory-iterator/issues"
+    "url": "https://github.com/elycruz/node-dirwalk/issues"
   },
-  "homepage": "https://github.com/elycruz/node-directory-iterator#readme",
-  "dependencies": {
-    "fjl": "^1.12.6"
-  }
+  "homepage": "https://github.com/elycruz/node-dirwalk#readme",
+  "dependencies": {}
 }

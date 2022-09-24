@@ -1,11 +1,8 @@
 /**
- * Created by elyde on 5/6/2017.
+ * SjlFileInfo.js
  */
 
-'use strict';
-
-const fs = require('fs'),
-    path = require('path'),
+const path = require('path'),
 
     SjlFileInfoMethodNames = [
         'isSymbolicLink', 'isFile', 'isDirectory',
@@ -14,7 +11,7 @@ const fs = require('fs'),
     ],
 
     statModeAboveMask = (mode, mask) => {
-        return !!(mask & parseInt ((mode & 0o777).toString (8)[0], 10));
+        return !!(mask & parseInt((mode & 0o777).toString(8)[0], 10));
     },
 
     isReadable = statMode => statModeAboveMask(statMode, 4),
@@ -23,66 +20,69 @@ const fs = require('fs'),
 
     isWritable = statMode => statModeAboveMask(statMode, 2);
 
-function SjlFileInfo (fileName, filePath, stat, files) {
-    const ext = path.extname(fileName),
-        basename = path.basename(fileName, ext);
-    Object.defineProperties(this, {
-        fileName: {
-            value: fileName,
-            enumerable: true
-        },
-        filePath: {
-            value: filePath,
-            enumerable: true
-        },
-        basename: {
-            value: basename,
-            enumerable: true
-        },
-        extension: {
-            value: ext,
-            enumerable: true
-        },
-        lastModified: {
-            value: stat.mtime,
-            enumerable: true
-        },
-        createdDate: {
-            value: stat.birthtime,
-            enumerable: true
-        },
-        lastChanged: {
-            value: stat.ctime,
-            enumerable: true
-        },
-        lastAccessed: {
-            value: stat.atime,
-            enumerable: true
-        },
-        stat: {
-            value: stat
-        }
-    });
+class SjlFileInfo {
+    constructor(fileName, filePath, stat, files) {
+        const ext = path.extname(fileName),
+            basename = path.basename(fileName, ext);
 
-    if (files) {
-        Object.defineProperty(this, 'files', {
-            value: files,
-            enumerable: true
+        Object.defineProperties(this, {
+            fileName: {
+                value: fileName,
+                enumerable: true
+            },
+            filePath: {
+                value: filePath,
+                enumerable: true
+            },
+            basename: {
+                value: basename,
+                enumerable: true
+            },
+            extension: {
+                value: ext,
+                enumerable: true
+            },
+            lastModified: {
+                value: stat.mtime,
+                enumerable: true
+            },
+            createdDate: {
+                value: stat.birthtime,
+                enumerable: true
+            },
+            lastChanged: {
+                value: stat.ctime,
+                enumerable: true
+            },
+            lastAccessed: {
+                value: stat.atime,
+                enumerable: true
+            },
+            stat: {
+                value: stat
+            }
         });
+
+        if (files) {
+            Object.defineProperty(this, 'files', {
+                value: files,
+                enumerable: true
+            });
+        }
+    }
+
+    isExecutable() {
+        return isExecutable(this.stat.mode);
+    }
+
+    isReadable() {
+        return isReadable(this.stat.mode);
+    }
+
+    isWritable() {
+        return isWritable(this.stat.mode);
     }
 }
-
-SjlFileInfo.prototype.isExecutable = function () {
-    return isExecutable(this.stat.mode);
-};
-
-SjlFileInfo.prototype.isReadable = function () {
-    return isReadable(this.stat.mode);
-};
-
-SjlFileInfo.prototype.isWritable = function () {
-    return isWritable(this.stat.mode);
-};
 
 SjlFileInfoMethodNames.forEach(key => {
     SjlFileInfo.prototype[key] = function () {

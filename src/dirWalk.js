@@ -1,62 +1,128 @@
 /**
- * Created by elyde on 6/15/2017.
+ * dirWalk.js
  */
-
-'use strict';
 
 const path = require('path'),
 
     {readDirectory, readStat} = require('./utils'),
 
-    {curry} = require('fjl'),
+    SjlFileInfo = require('./SjlFileInfo');
 
-    SjlFileInfo = require('./SjlFileInfo'),
+/**
+ * @class DirectoryWalker
+ */
+class DirectoryWalker {
+    /**
+     * @type {SjlFileInfo}
+     */
+    TypeRep = SjlFileInfo;
 
-    processForkOnStat = curry((TypeRep, filePath, fileName, dirEffectFactory, fileEffectFactory, stat) => {
+    /**
+     * @param {string} dirPath
+     * @param {string} dirName
+     * @param {fs.Stats} stat
+     * @returns {(SjlFileInfo) => Promise<string>}
+     */
+    dirEffectFactory = (dirPath, dirName, stat) => (fileInfo) => Promise.resolve();
+
+    /**
+     * @param {string} filePath
+     * @param {string} fileName
+     * @param {fs.Stats} stat
+     * @returns {(SjlFileInfo) => Promise<string>}
+     */
+    fileEffectFactory = (filePath, fileName, stat) => (fileInfo) => Promise.resolve();
+
+    /**
+     * @param {(string, string, fs.Stats) => (string) => Promise<string>} dirEffectFactory
+     * @param {(string, string, fs.Stats) => (string) => Promise<string>} fileEffectFactory
+     */
+    constructor(dirEffectFactory, fileEffectFactory, TypeRep = SjlFileInfo) {
+        this.dirEffectFactory = dirEffectFactory;
+        this.fileEffectFactory = fileEffectFactory;
+        this.TypeRep = TypeRep;
+    }
+
+    /**
+     * @param {string} dirPath
+     * @param {string} dirName
+     * @param {fs.Stats} stat
+     * @returns {Promise<string>}
+     */
+    processDirectory(dirPath, dirName, stat) {
+        const {dirEffectFactory, TypeRep} = this;
+        return readDirectory(dirPath)
+            .then(files => this.processFiles(dirPath, files).then(() => files))
+            .then(files => dirEffectFactory(dirPath, dirName, stat)(
+                new TypeRep(dirName, dirPath, stat, files), files)
+            );
+    }
+
+    /**
+     * @param {string} filePath
+     * @param {string} fileName
+     * @param {fs.Stats} stat
+     * @returns {Promise<string>}
+     */
+    processFile(filePath, fileName, stat) {
+        const {fileEffectFactory, TypeRep} = this;
+        return new Promise((resolve, reject) => {
+            if (!stat.isDirectory()) {
+                resolve(fileEffectFactory(filePath, fileName, stat)(new TypeRep(fileName, filePath, stat)));
+            }
+            this.processDirectory(filePath, fileName, stat)
+                .then(resolve, reject);
+        });
+    }
+
+    /**
+     * @param {string} dir
+     * @param {string[]} files
+     * @returns {Promise<string>}
+     */
+    processFiles(dir, files) {
+        return new Promise((resolve, reject) => {
+            return Promise.all(
+                files.map(fileName => {
+                    const filePath = path.join(dir, fileName);
+                    return readStat(filePath)
+                        .then(stat => this.processForkOnStat(filePath, fileName, stat));
+                })
+            )
+                .then(resolve, reject);
+        })
+    }
+
+    /**
+     * @param {string} filePath
+     * @param {string} fileName
+     * @param {fs.Stats} stat
+     * @returns {Promise<string>|*}
+     */
+    processForkOnStat(filePath, fileName, stat) {
         if (stat.isDirectory()) {
-            return processDirectory(TypeRep, filePath, stat, dirEffectFactory, fileEffectFactory, fileName);
+            return this.processDirectory(filePath, fileName, stat);
+        } else if (stat.isFile()) {
+            return this.processFile(filePath, fileName, stat);
         }
-        else if (stat.isFile()) {
-            return processFile(TypeRep, filePath, stat, dirEffectFactory, fileEffectFactory, fileName);
-        }
-        return fileEffectFactory(filePath, stat, fileName)(new TypeRep(fileName, filePath, stat));
-    }),
+        return this.fileEffectFactory(filePath, fileName, stat)(new this.TypeRep(fileName, filePath, stat));
+    }
+}
 
-    processDirectory = curry((TypeRep, dirPath, stat, dirEffectFactory, fileEffectFactory, dirName) => new Promise ((resolve, reject) => {
-        readDirectory(dirPath)
-            .then(files => {
-                return processFiles(TypeRep, dirPath, dirEffectFactory, fileEffectFactory, files)
-                    .then(files => dirEffectFactory(dirPath, stat, dirName)(new TypeRep(dirName, dirPath, stat, files), files));
-            })
-            .then(resolve, reject)
-    })),
-
-    processFile = curry((TypeRep, filePath, stat,  dirEffectFactory, fileEffectFactory, fileName) => new Promise ((resolve, reject) => {
-        if (!stat.isDirectory()) {
-            resolve(fileEffectFactory(filePath, stat, fileName)(new TypeRep(fileName, filePath, stat)));
-        }
-        processDirectory(TypeRep, filePath, stat, dirEffectFactory, fileEffectFactory, fileName)
-            .then(resolve, reject);
-    })),
-
-    processFiles = curry((TypeRep, dir, dirEffectFactory, fileEffectFactory, files) => new Promise ((resolve, reject) => {
-        return Promise.all(
-            files.map(fileName => {
-                const filePath = path.join(dir, fileName);
-                return readStat(filePath)
-                    .then(processForkOnStat(TypeRep, filePath, fileName, dirEffectFactory, fileEffectFactory));
-            })
-        )
-            .then(resolve, reject);
-    })),
-
-    dirWalk = (TypeRep, dirEffectFactory, fileEffectFactory, dir) => {
-        TypeRep = TypeRep || SjlFileInfo;
-        return readStat(dir)
-            .then(stat => {
-                const dirName = path.basename(dir);
-                return processForkOnStat(TypeRep, dir, dirName, dirEffectFactory, fileEffectFactory, stat);
-            });
-    };
+/**
+ * @param {string} dir
+ * @param {} fileEffectFactory
+ * @param {} dirEffectFactory
+ * @param {} TypeRep
+ * @returns {Promise<string>}
+ */
+const dirWalk = (dir, fileEffectFactory, dirEffectFactory, TypeRep) => {
+    const walker = new DirectoryWalker(dirEffectFactory, fileEffectFactory, TypeRep);
+    return readStat(dir)
+        .then(stat => {
+            const dirName = path.basename(dir);
+            return walker.processForkOnStat(dir, dirName, stat);
+        });
+};
 
 module.exports = dirWalk;
