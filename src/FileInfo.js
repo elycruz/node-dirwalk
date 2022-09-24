@@ -1,10 +1,10 @@
 /**
- * SjlFileInfo.js
+ * FileInfo.js
  */
 
 const path = require('path'),
 
-    SjlFileInfoMethodNames = [
+    FileInfoMethodNames = [
         'isSymbolicLink', 'isFile', 'isDirectory',
         'isBlockDevice', 'isCharacterDevice', 'isFIFO',
         'isSocket'
@@ -20,7 +20,7 @@ const path = require('path'),
 
     isWritable = statMode => statModeAboveMask(statMode, 2);
 
-class SjlFileInfo {
+class FileInfo {
     constructor(fileName, filePath, stat, files) {
         const ext = path.extname(fileName),
             basename = path.basename(fileName, ext);
@@ -84,13 +84,13 @@ class SjlFileInfo {
     }
 }
 
-SjlFileInfoMethodNames.forEach(key => {
-    SjlFileInfo.prototype[key] = function () {
+FileInfoMethodNames.forEach(key => {
+    FileInfo.prototype[key] = function () {
         return this.stat[key]();
     };
 });
 
-Object.defineProperty(SjlFileInfo, 'statModeAboveMask',
+Object.defineProperty(FileInfo, 'statModeAboveMask',
     {value: statModeAboveMask, enumerable: true});
 
-module.exports = SjlFileInfo;
+module.exports = FileInfo;

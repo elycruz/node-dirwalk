@@ -2,7 +2,7 @@
 Functional directory walking via promises.  The library offers you two functions for recursively walking a directory.
  One, `dirWalk`, offers you fine grain control for when needing to recursively walk through a directory
  and the other, `dirWalkToTree`, does the work for you when all you need is a tree representation of a directory.
- The library also offers one data type, `SjlFileInfo`, which can be overridden via the first
+ The library also offers one data type, `FileInfo`, which can be overridden via the first
  parameter of `dirWalk` and `dirWalkToTree`.
 
 ### Usage:
@@ -21,7 +21,7 @@ const path = require('path'),
 // Get tree structure
 dirWalkToTree (
 
-    // Use default `TypeRep` (`SjlFileInfo`)
+    // Use default `TypeRep` (`FileInfo`)
     null,
 
     // Path to step through
@@ -120,11 +120,11 @@ dirWalk (
 
 - dirWalk
 - dirWalkToTree
-- SjlFileInfo
+- FileInfo
 
 #### `dirWalk (TypeRep, dirEffectFactory, fileEffectFactory, dir) : Promise`
 - **`TypeRep`** {Constructor<filePath, stat{fs.Stat}, fileName> | null | undefined} - 
-    File node data type constructor. Optional.  Default `SjlFileInfo`.
+    File node data type constructor. Optional.  Default `FileInfo`.
 - **`dirEffectFactory`** {Function<filePath, stat{fs.Stat}, fileName>:Function<fileInfoObj{TypeRep}, files{Array}>} - 
     Call back factory that returns the callback that handles visits to directories 
     **Note** directory recursion is handled for you by `dirWalk`, the returned callback
@@ -137,7 +137,7 @@ dirWalk (
 
 #### **`dirWalkToTree (TypeRep, dirPath) : Promise`
 - **`TypeRep`** {Constructor<filePath, stat{fs.Stat}, fileName> | null | undefined} - 
-    File node data type constructor. Optional.  Default `SjlFileInfo`.
+    File node data type constructor. Optional.  Default `FileInfo`.
 - **`dir`** {String} - Directory to walk.
 - **returns** - A promise with the compiled data tree of visited file/directory nodes visited.
 ##### Example:
@@ -151,7 +151,7 @@ dirWalkToTree (null, path.join(__dirname, '/../some-dir'))
     .then(log, log);
 ```
 
-#### **`SjlFileInfo {Function <fileName, filePath, stat {fs.Stat}>}`
+#### **`FileInfo {Function <fileName, filePath, stat {fs.Stat}>}`
 Default data constructor used to construct file objects.
 
 ##### Properties:
@@ -167,7 +167,7 @@ Default data constructor used to construct file objects.
     type this property is ignored since it is not `enumerable`.
 
 ###### If represents a directory:
-- `files` {Array<SjlFileInfo>}
+- `files` {Array<FileInfo>}
 
 ### References:
 **Stat notes**:

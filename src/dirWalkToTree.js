@@ -1,28 +1,25 @@
 /**
- * Created by u067265 on 5/3/17.
+ * @memberOf node-dirwalk
+ * @module dirWalkToTree
  */
 
-'use strict';
+const dirWalk = require('./dirWalk'),
 
-const path = require('path'),
+  {FileInfo} = require("../index"),
 
-    SjlFileInfo = require('./SjlFileInfo'),
+  id = x => x,
 
-    dirWalk = require('./dirWalk'),
-
-    id = x => x,
-
-    /**
-     * Walks directories and constructs file and directory objects from type constructor for each encountered item.
-     * @param TypeRep {Function} - Type constructor.
-     * @param dir {String} - Dir to walk.
-     * @return {Promise<Object>}
-     */
-    dirWalkToTree = (TypeRep, dir) => dirWalk (
-        TypeRep,
-        (filePath, stat, fileName) => id,
-        (filePath, stat, fileName) => id,
-        dir // dir to walk
-    );
+  /**
+   * Walks directories and constructs file and directory objects from type constructor for each encountered item.
+   * @param dir {String} - Dir to walk.
+   * @param [TypeRep=FileInfo] - Type constructor - Optional.
+   * @return {Promise<Object>} - An object representing a directory tree.
+   */
+  dirWalkToTree = (dir, TypeRep = FileInfo) => dirWalk(
+    dir,
+    () => id, // Return resulting `FileInfo` object, as is
+    () => id, // ""
+    TypeRep,
+  );
 
 module.exports = dirWalkToTree;
